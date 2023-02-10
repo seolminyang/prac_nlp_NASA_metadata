@@ -1,0 +1,100 @@
+---
+title: "NLP with NASA Metadata"
+author: "*Seolmin Yang*"
+output: html_document
+date: "2023-02-08"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(message = F)
+```
+
+## Introduction
+This work aims to practice NLP and text analysis by using the NASA metadata. NASA provides over 32,000 datasets as a form of metadata, such as title, description, and keywords. I adopt the tutorial codes provided by Julia Silge and David Robinson in their book, Text Mining with R (see <https://www.tidytextmining.com/index.html>).
+
+[Getting the NASA metadata](#getting-the-nasa-metadata)   
+[Tyding the keywords from NASA metadata](#tyding-the-keywords-of-the-nasa-metadata)   
+[Keyword co-occurrences and correlations](#keyword-co-occurrences-and-correlations)   
+
+## Getting the NASA metadata
+
+The NASA metadata has JSON format.
+```{r getting}
+library(jsonlite)
+metadata = fromJSON("https://data.nasa.gov/data.json")
+names(metadata$dataset)
+```
+
+## Tyding the keywords of the NASA metadata
+
+I mainly focus on the keywords of the NASA metadata. Using tidytext's unnest(), I break the text to make a tidy data structure.
+```{r tyding}
+library(dplyr)
+library(tidyr)
+library(tidytext)
+nasa_keyword = tibble(id = metadata$dataset$identifier,
+                      keyword = metadata$dataset$keyword) %>% 
+  unnest(keyword)
+
+nasa_keyword
+```
+
+
+## Keyword co-occurrences and correlations
+I calculate co-occurrences and correlations of keywords
+
+```{r co-occurrence}
+library(widyr)
+
+keyword_pairs = nasa_keyword %>% 
+  pairwise_count(keyword, id, sort = T, upper = F)
+
+keyword_pairs
+```
+
+```{r correlation}
+keyword_cors = nasa_keyword %>% 
+  group_by(keyword) %>% 
+  filter(n() >= 200) %>% 
+  pairwise_cor(keyword, id, sort = T, upper = F)
+
+keyword_cors
+```
+
+Then, I plot the co-occurrence network of the keywords.
+
+```{r co-occurence network, warning = F}
+library(ggraph)
+library(igraph)
+
+set.seed(123)
+keyword_pairs %>% 
+  filter(n >= 700) %>% 
+  graph_from_data_frame() %>% 
+  ggraph(layout = "fr") +
+  geom_edge_link(aes(edge_alpha = n, edge_width = n),
+                 edge_colour = "royalblue") +
+  geom_node_point(size = 5) +
+  geom_node_text(aes(label = name), repel = T,
+                 point.padding = unit(0.2, "lines")) +
+  labs(title = "Keyword co-occurence network") +
+  theme_void()
+```
+
+This is the correlation network of the keywords.
+
+```{r correlation network, warning = F}
+set.seed(123)
+keyword_cors %>% 
+  filter(correlation > .6) %>% 
+  graph_from_data_frame() %>% 
+  ggraph(layout = "fr") +
+  geom_edge_link(aes(edge_alpha = correlation, edge_width = correlation),
+                 edge_colour = "royalblue") +
+  geom_node_point(size = 5) +
+  geom_node_text(aes(label = name), repel = T,
+                 point.padding = unit(0.2, "lines")) +
+  labs(title = "Keyword correlation network") +
+  theme_void()
+```
