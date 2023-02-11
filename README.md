@@ -6,11 +6,6 @@
 date: "2023-02-08"
 ---
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-knitr::opts_chunk$set(message = F)
-```
-
 ## Introduction
 This work aims to practice NLP and text analysis by using the NASA metadata. NASA provides over 32,000 datasets as a form of metadata, such as title, description, and keywords. I adopt the tutorial codes provided by Julia Silge and David Robinson in their book, Text Mining with R (see <https://www.tidytextmining.com/index.html>).
 
