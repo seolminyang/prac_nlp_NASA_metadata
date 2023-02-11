@@ -1,13 +1,8 @@
 # prac_nlp_NASA_metadata
 
 ---
-title: "NLP with NASA Metadata"
-author: "*Seolmin Yang*"
-output: 
-  html_document:
-    toc: yes
-    toc_depth: 3
-    toc_float: yes
+"NLP with NASA Metadata"   
+"*Seolmin Yang*"   
 date: "2023-02-08"
 ---
 
