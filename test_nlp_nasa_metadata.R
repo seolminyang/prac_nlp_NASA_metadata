@@ -51,6 +51,7 @@ nasa_keyword %>%
 nasa_keyword = nasa_keyword %>% 
   mutate(keyword = toupper(keyword))
 
+# Word co-occurrences and correlations
 library(widyr)
 
 title_word_pairs = nasa_title %>% 
@@ -93,7 +94,6 @@ keyword_pairs %>%
                  point.padding = unit(0.2, "lines")) +
   theme_void()
 
-
 keyword_cors = nasa_keyword %>% 
   group_by(keyword) %>% 
   filter(n() >= 200) %>% 
@@ -112,3 +112,13 @@ keyword_cors %>%
   geom_node_text(aes(label = name), repel = T,
                  point.padding = unit(0.2, "lines")) +
   theme_void()
+
+# tf-idf for the descirption
+desc_tf_idf = nasa_desc %>% 
+  count(id, word, sort = T) %>% 
+  bind_tf_idf(word, id, n)
+
+desc_tf_idf %>%
+  arrange(-tf_idf)
+
+desc_tf_idf = full_join(desc_tf_idf, nasa_)
